@@ -1,39 +1,62 @@
-const webpack = require('webpack');
-const path = require('path');
-// React v.16 uses some newer JS functionality, so to ensure everything
-// works across all browsers, we're adding babel-polyfill here.
-require('babel-polyfill');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+const devMode = process.env.NODE_ENV !== 'production';
 
 module.exports = {
-  entry: [
-    './src/index'
-  ],
-  module: {
-    loaders: [
-      { test: /\.js?$/, loader: 'babel-loader', exclude: /node_modules/ },
-      { test: /\.s?css$/, loader: 'style-loader!css-loader!sass-loader' },
-    ]
-  },
-  resolve: {
-    modules: [
-      path.resolve('./'),
-      path.resolve('./node_modules'),
+    mode: devMode ? 'development' : 'production',
+    module: {
+        rules: [
+            {
+                test: /\.(sa|sc|c)ss$/,
+                use: [
+                    devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    { loader: 'css-loader', options: { importLoaders: 1 } },
+                    'sass-loader',
+                ],
+            },
+            {
+                exclude: /node_modules/,
+                test: /\.js$/,
+                use: {
+                    loader: 'babel-loader',
+                },
+            },
+            {
+                test: /\.(png|svg|jpe?g|gif)$/,
+                use: ['file-loader'],
+            },
+        ],
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                styles: {
+                    chunks: 'all',
+                    enforce: true,
+                    name: 'styles',
+                    test: /\.css$/,
+                },
+            },
+        },
+    },
+    output: {
+        chunkFilename: "[id].[hash].js",
+        filename: "[name].[hash].js",
+        path: `${__dirname}/dist`,
+    },
+    performance: {
+        hints: false,
+    },
+    plugins: [
+        new HtmlWebpackPlugin({
+            filename: './index.html',
+            template: './src/index.html',
+        }),
+        new MiniCssExtractPlugin({
+            chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+            filename: devMode ? '[name].css' : '[name].[hash].css',
+        }),
     ],
-    extensions: ['.js','.scss'],
-  },
-  output: {
-    path: path.join(__dirname, '/dist'),
-    publicPath: '/',
-    filename: 'bundle.js'
-  },
-  devtool: 'cheap-eval-source-map',
-  devServer: {
-    contentBase: './dist',
-    hot: true
-  },
-  plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin()
-  ]
+    target: 'web',
 };
