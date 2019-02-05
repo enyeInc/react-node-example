@@ -21,15 +21,6 @@ $ npm run dev
 Once the server is running, you can visit `http://localhost:8080/`
 
 ## Linting
-_This assumes you have eslint and eslint-watch installed. If you don't, run the following:_
-```
-$ npm i -g eslint eslint-watch
-```
-or if you need permissions:
-```
-$ sudo npm i -g eslint eslint-watch
-```
-
 To run the linter once:
 ```
 $ npm run lint
